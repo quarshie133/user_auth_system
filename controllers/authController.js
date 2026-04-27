@@ -23,19 +23,16 @@ const signup = async (req, res) => {
     try {
         const { username, email, password } = req.body;
 
-        // Check if already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            return res.status(400).json({ success: false, message: 'Email already registered' })
+            return res.status(400).json({ success: false, message: 'Email already registered' });
         }
 
-        // Create user — password gets hashed automatically by pre-save hook
-        const user = await User.create({ username, email, password })
+        const user = await User.create({ username, email, password });
 
-        // Generate token
         const token = generateToken(user._id);
 
-        res.status(201).join({
+        res.status(201).json({          // ✅ .json() not .join()
             success: true,
             message: 'Account created successfully',
             token,
@@ -49,6 +46,7 @@ const signup = async (req, res) => {
         res.status(400).json({ success: false, message: error.message });
     }
 };
+
 
 // ══════════════════════════════════════════════════════════
 // LOGIN — POST /api/auth/login
@@ -113,4 +111,16 @@ const getMe = async (req, res) => {
 };
 
 
-module.exports = { signup, login, getMe };
+// ══════════════════════════════════════════════════════════
+// GET ALL USERS — GET /api/auth/users (Protected)
+// ══════════════════════════════════════════════════════════
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find().sort({ createdAt: -1 }); // newest first
+    res.status(200).json({ success: true, count: users.length, data: users });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+module.exports = { signup, login, getMe, getAllUsers };

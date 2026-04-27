@@ -32,12 +32,11 @@ const userSchema = new mongoose.Schema(
 // ── PRE-SAVE HOOK ──────────────────────────────────────────
 // This runs automatically before every .save()
 // It hashes the password only if it was changed (or is new)
-userSchema.pre('save', async function (next) {
-    if (!this.isModified('password')) return next() // skip if password unchanged
+userSchema.pre('save', async function () {
+    if (!this.isModified('password')) return // skip if password unchanged
 
     const salt = await bcrypt.genSalt(10)  // generate random salt (10 rounds)
     this.password = await bcrypt.hash(this.password, salt) // hash + salt the password
-    next()
 });
 
 // ── METHOD: Compare entered password with stored hash ──────
